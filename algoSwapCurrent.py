@@ -24,8 +24,6 @@ LIQUIDITY_TOKEN = Bytes("LT")
 TOKEN1_BAL = Bytes("B1")
 TOKEN2_BAL = Bytes("B2")
 LIQUIDITY_TOKEN_DISTRIBUTED = Bytes("LD")
-PROTOCOL_UNUSED_TOKEN1 = Bytes("P1")
-PROTOCOL_UNUSED_TOKEN2 = Bytes("P2")
 USER_UNUSED_TOKEN1 = Bytes("U1")
 USER_UNUSED_TOKEN2 = Bytes("U2")
 USER_UNUSED_LIQUIDITY = Bytes("UL")
@@ -54,8 +52,8 @@ def approval_program():
     _token2_bal = App.localGet(Int(1), TOKEN2_BAL)
     _liquidity_token_distributed = App.localGet(Int(1), LIQUIDITY_TOKEN_DISTRIBUTED)
 
-    _protocol_unused_token1 = App.localGet(Int(1), PROTOCOL_UNUSED_TOKEN1)
-    _protocol_unused_token2 = App.localGet(Int(1), PROTOCOL_UNUSED_TOKEN2)
+    #_protocol_unused_token1 = App.localGet(Int(1), PROTOCOL_UNUSED_TOKEN1)
+    #_protocol_unused_token2 = App.localGet(Int(1), PROTOCOL_UNUSED_TOKEN2)
 
     # Write to additional account
     def write_token1_bal(bal: Int):
@@ -179,7 +177,7 @@ def approval_program():
         ),
         write_user_unused_liquidity(
             Txn.accounts[1],
-            read_user_unused_liquidity(Txn.accounts[1] + sv_new_liquidity.load())
+            read_user_unused_liquidity(Txn.accounts[1]) + sv_new_liquidity.load()
         ),
         #TOKEN1_BAL += token1_used. Likewise, TOKEN2_BAL
         write_token1_bal(sv_token1_bal.load() + sv_token1_used.load()),
@@ -193,12 +191,12 @@ def approval_program():
         [Txn.application_id() == Int(0), on_create],
         [Txn.on_completion() == OnComplete.CloseOut, on_closeout],
         [Txn.on_completion() == OnComplete.OptIn, on_opt_in],
-        [Txn.on_completion() == OnComplete.NoOp, on_add_liquidity]
+        [Txn.on_completion() == OnComplete.NoOp, on_add_liquidity],
         [Txn.on_completion() == OnComplete.UpdateApplication, on_updateapp],
         [Txn.on_completion() == OnComplete.DeleteApplication, on_deleteapp],
     )
-    return compileTeal(program, Mode.Application, version=5)
+    return program
 
 def clear_program():
     program = Return(Int(1))
-    return compileTeal(program, Mode.Application, version=5)
+    return program 
